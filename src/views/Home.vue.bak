@@ -1,0 +1,286 @@
+<template>
+  <div class="min-h-screen flex flex-col bg-gray-50">
+    <Header />
+    
+    <main class="flex-grow container mx-auto px-4 py-6 relative">
+      <LoadingSpinner v-if="isLoading" />
+      
+      <div v-if="!isLoading">
+        <!-- KVM VPS 部分 -->
+        <VpsSection 
+          title="KVM VPS 优惠" 
+          description="KVM虚拟化技术，独立内核，性能接近于独立服务器" 
+          :vpsList="kvmDeals" 
+          sectionId="kvm" 
+        />
+        
+        <!-- NAT/OpenVZ VPS 部分 -->
+        <VpsSection 
+          title="NAT/OpenVZ VPS 优惠" 
+          description="OpenVZ虚拟化，共享内核，稳定性高，适合简单应用" 
+          :vpsList="natDeals" 
+          sectionId="nat" 
+        />
+        
+        <!-- 高配置 VPS 部分 -->
+        <VpsSection 
+          title="高配置 VPS" 
+          description="高性能配置，适合运行资源密集型应用" 
+          :vpsList="highSpecDeals"
+          sectionId="highspec" 
+        />
+      
+        <!-- 功能区块 -->
+        <section class="py-12">
+          <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white relative">
+              <div class="absolute top-0 right-0 w-40 h-40 opacity-10">
+                <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold mb-3">为什么选择我们推荐的VPS?</h2>
+              <p class="mb-2 max-w-2xl">我们精心挑选了性价比最高的VPS服务商，为您提供可靠的推荐</p>
+              <div class="inline-flex bg-white/20 text-white text-sm px-3 py-1 rounded-full">已收录{{kvmDeals.length + natDeals.length + highSpecDeals.length}}款VPS</div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 p-8">
+              <div class="flex flex-col items-center text-center group">
+                <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-200 transition-colors duration-300">
+                  <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">价格优惠</h3>
+                <p class="text-gray-600">精选年付低于$15的高性价比VPS，帮您节省预算</p>
+              </div>
+              
+              <div class="flex flex-col items-center text-center group">
+                <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-200 transition-colors duration-300">
+                  <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">性能卓越</h3>
+                <p class="text-gray-600">所有推荐VPS均经过实际测试，确保稳定性和性能</p>
+              </div>
+              
+              <div class="flex flex-col items-center text-center group">
+                <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-200 transition-colors duration-300">
+                  <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">全球覆盖</h3>
+                <p class="text-gray-600">提供多个数据中心位置，满足您的全球部署需求</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 底部回到顶部按钮 -->
+        <div class="flex justify-center mt-8">
+          <a href="#" class="inline-flex items-center px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full transition shadow-sm hover:shadow group">
+            <svg class="w-5 h-5 mr-2 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11l7-7 7 7M5 19l7-7 7 7"></path>
+            </svg>
+            回到顶部
+          </a>
+        </div>
+      </div>
+    </main>
+    
+    <footer class="bg-gray-900 text-white py-8">
+      <div class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="mb-6 md:mb-0">
+            <div class="flex items-center justify-center md:justify-start mb-3">
+              <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                <span class="text-white font-bold text-lg">VPS</span>
+              </div>
+              <h3 class="text-xl font-bold">优惠VPS推荐</h3>
+            </div>
+            <p class="text-gray-400 text-center md:text-left">为您精选全球高性价比VPS</p>
+          </div>
+          
+          <div class="flex flex-col items-center md:items-end">
+            <div class="flex flex-wrap justify-center gap-4 mb-4">
+              <a href="#kvm" class="text-gray-300 hover:text-white hover:underline transition">KVM主机</a>
+              <a href="#nat" class="text-gray-300 hover:text-white hover:underline transition">NAT主机</a>
+              <a href="#highspec" class="text-gray-300 hover:text-white hover:underline transition">高配主机</a>
+            </div>
+            <router-link to="/admin/login" class="text-indigo-400 hover:text-indigo-300 transition">管理后台</router-link>
+          </div>
+        </div>
+        
+        <div class="border-t border-gray-800 mt-6 pt-6 text-center">
+          <p class="text-gray-400">&copy; {{ new Date().getFullYear() }} 优惠VPS推荐. 保留所有权利.</p>
+          <p class="text-gray-500 text-sm mt-2">您的一站式VPS优惠信息网站</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+</template>
+
+<script>
+import Header from '../components/Header.vue';
+import VpsSection from '../components/VpsSection.vue';
+import LoadingSpinner from '../components/LoadingSpinner.vue';
+import { useStore } from 'vuex';
+import { computed, onMounted, onUnmounted } from 'vue';
+
+export default {
+  components: {
+    Header,
+    VpsSection,
+    LoadingSpinner
+  },
+  props: {
+    filter: {
+      type: String,
+      default: null
+    }
+  },
+  setup(props) {
+    const store = useStore();
+    const router = useRouter();
+    const route = useRoute();
+    
+    // 设置SEO信息
+    onMounted(() => {
+      // 显示加载动画
+      store.commit('setLoading', true);
+      
+      // 设置页面标题和描述
+      let pageTitle = '优惠VPS推荐 - KVM、NAT、OpenVZ高性价比服务器';
+      let pageDescription = 'KVM、NAT、OpenVZ、LXC、年付低于$15的高配VPS，性价比最高的虚拟服务器推荐，帮您找到最实惠的服务器';
+      
+      // 根据过滤条件调整标题和描述
+      if (props.filter) {
+        switch(props.filter) {
+          case 'under15':
+            pageTitle = '年付15美元以下便宜VPS推荐';
+            pageDescription = '精选年付低于15美元的高性价比VPS服务器，适合个人网站和轻量级应用';
+            break;
+          case 'under25':
+            pageTitle = '年付25美元以下性价比VPS推荐';
+            pageDescription = '年付不到25美元的中配置VPS主机，适合中小型网站和应用部署';
+            break;
+          case 'monthly':
+            pageTitle = '月付2美元以下超便宜VPS推荐';
+            pageDescription = '月付低于2美元的经济型VPS，灵活付费，低成本尝试各类应用';
+            break;
+          case 'nat':
+            pageTitle = 'NAT/OpenVZ VPS主机推荐';
+            pageDescription = 'OpenVZ虚拟化技术的VPS主机，共享内核，高性能高稳定适合多种应用';
+            break;
+          case 'storage':
+            pageTitle = '大容量存储型VPS推荐';
+            pageDescription = '大硬盘容量VPS服务器，适合数据备份、媒体存储和文件分享应用';
+            break;
+          case 'highspec':
+            pageTitle = '高配置VPS服务器推荐';
+            pageDescription = '高CPU核心、大内存的高性能VPS，适合资源密集型应用和高并发网站';
+            break;
+          case 'vds':
+            pageTitle = 'VDS服务器推荐';
+            pageDescription = '虚拟专用服务器(VDS)推荐，媲美独立服务器的性能和配置';
+            break;
+          case 'free':
+            pageTitle = '免费VPS服务器资源';
+            pageDescription = '免费VPS和云服务器资源汇总，适合测试和学习使用';
+            break;
+          case 'cheap':
+            pageTitle = '超便宜VPS推荐';
+            pageDescription = '性价比最高的超便宜VPS主机推荐，低预算高质量选择';
+            break;
+          case 'china':
+            pageTitle = '国内直连VPS推荐';
+            pageDescription = '国内访问速度快的VPS服务器，低延迟高稳定性，适合面向中国用户的网站和应用';
+            break;
+          case 'yearly':
+            pageTitle = '年付VPS优惠推荐';
+            pageDescription = '年付优惠VPS，长期使用省钱之选，稳定可靠的服务器资源';
+            break;
+          case 'contact':
+            pageTitle = '联系我们 - VPS优惠推荐';
+            pageDescription = '有问题或建议？欢迎联系我们，我们将为您提供最适合的VPS推荐和解决方案';
+            break;
+        }
+      }
+      
+      store.commit('setPageTitle', pageTitle);
+      store.commit('setPageDescription', pageDescription);
+      
+      // 模拟数据加载
+      setTimeout(() => {
+        store.commit('setLoading', false);
+      }, 800);
+      
+      // 添加结构化数据
+      addStructuredData();
+    });
+    
+    // 添加结构化数据
+    const addStructuredData = () => {
+      const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "优惠VPS推荐",
+        "description": "KVM、NAT、OpenVZ、LXC、年付低于$15的高配VPS推荐",
+        "url": window.location.origin
+      };
+      
+      let script = document.querySelector('#structured-data');
+      if (!script) {
+        script = document.createElement('script');
+        script.id = 'structured-data';
+        script.type = 'application/ld+json';
+        document.head.appendChild(script);
+      }
+      
+      script.textContent = JSON.stringify(structuredData);
+    };
+    
+    // 清理
+    onUnmounted(() => {
+      const script = document.querySelector('#structured-data');
+      if (script) {
+        script.remove();
+      }
+    });
+    
+    return {
+      kvmDeals: computed(() => store.getters.getDeals('kvmDeals')),
+      natDeals: computed(() => store.getters.getDeals('natDeals')),
+      highSpecDeals: computed(() => store.getters.getDeals('highSpecDeals')),
+      isLoading: computed(() => store.getters.isLoading)
+    };
+  }
+};
+</script>
+
+<style scoped>
+/* 为移动设备优化 */
+@media (max-width: 640px) {
+  main {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+  
+  .py-12 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+/* 添加页面淡入效果 */
+main > div {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+</style>
