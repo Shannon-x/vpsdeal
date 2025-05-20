@@ -127,15 +127,11 @@
       </div>
     
     <!-- 标题区域 -->
-    <div class="w-full bg-gradient-to-r from-secondary-50 to-primary-50 px-4 md:px-6 transition-all duration-300 header-title-container"
+    <div class="w-full bg-gradient-to-r from-secondary-50 to-primary-50 px-4 md:px-6 transition-all duration-300"
          :class="{ 'py-8': !isScrolled, 'py-4': isScrolled }">
-      <div class="max-w-4xl mx-auto text-center relative">
+      <div class="max-w-4xl mx-auto text-center">
         <h1 class="text-2xl md:text-3xl font-bold text-gray-900" :class="{ 'md:text-4xl': !isScrolled }">{{ siteTitle }}</h1>
-        <transition name="fade">
-          <p v-if="!isScrolled" class="text-md md:text-lg text-gray-600 mt-2 description-text">{{ siteDescription }}</p>
-        </transition>
-        <!-- 占位元素确保高度一致 -->
-        <div v-if="isScrolled" class="description-placeholder"></div>
+        <p v-if="!isScrolled" class="text-md md:text-lg text-gray-600 mt-2 transition-opacity duration-300">{{ siteDescription }}</p>
       </div>
     </div>
   </header>
@@ -267,6 +263,12 @@ export default {
   width: 100%;
 }
   
+/* 标题区域布局 */
+.header-title-container {
+  display: flex;
+  align-items: center;
+}
+
 /* 导航菜单动画 */
 .animate-fadeDown {
   animation: fadeDown 0.5s ease-in-out;
@@ -284,35 +286,5 @@ export default {
 @keyframes slideDown {
   from { opacity: 0; max-height: 0; }
   to { opacity: 1; max-height: 500px; }
-}
-
-/* 标题区域布局 */
-.header-title-container {
-  min-height: 70px; /* 减小最小高度 */
-  display: flex;
-  align-items: center;
-}
-
-/* 描述文本淡入淡出动画 */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
-  position: absolute;
-  width: 100%;
-  left: 0;
-}
-
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
-
-/* 占位元素保持相同高度 */
-.description-placeholder {
-  height: 22px; /* 减小高度 */
-}
-
-/* 描述文本容器 */
-.description-text {
-  height: 22px; /* 减小高度 */
-  line-height: 1.4;
 }
 </style>
