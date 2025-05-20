@@ -200,10 +200,10 @@ export default {
   setup() {
     const store = useStore();
     const settings = ref({
-      siteTitle: '优惠VPS推荐 - KVM、NAT、OpenVZ高性价比服务器',
-      siteDescription: 'KVM、NAT、OpenVZ、LXC、年付低于$15的高配VPS，性价比最高的虚拟服务器推荐',
+      siteTitle: '优惠VPS推荐',
+      siteDescription: 'KVM、NAT、OpenVZ等高性价比服务器推荐',
       siteLogo: '',
-      siteShortTitle: '优惠VPS推荐',
+      siteShortTitle: '优惠VPS',
       contactEmail: 'cheapvpsdeals@gmail.com',
       lastUpdated: new Date().toISOString().split('T')[0],
       globalNotice: '',
