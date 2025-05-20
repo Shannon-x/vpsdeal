@@ -919,25 +919,9 @@ export default {
       console.log('isEditing:', isEditing.value, 'editIndex:', editIndex.value);
       
       try {
-        // 确定实际使用的集合名称
-        let categoryKey = selectedCategory.value;
-        // 在路由名和集合名之间建立映射关系
-        const categoryToCollectionMap = {
-          'monthly': 'monthlyUnder2Deals',
-          'under15': 'annualUnder15Deals',
-          'under25': 'annualUnder25Deals',
-          'nat': 'natOpenVZDeals',
-          'highspec': 'highSpecDeals',
-          'storage': 'storageDeals',
-          'free': 'freeDeals',
-          'vds': 'vdsDeals'
-        };
-        
-        if (categoryToCollectionMap[selectedCategory.value]) {
-          categoryKey = categoryToCollectionMap[selectedCategory.value];
-        }
-        
-        console.log('使用分类键:', categoryKey, '从选定分类:', selectedCategory.value);
+        // 使用选中分类的键
+        const categoryKey = selectedCategory.value;
+        console.log('使用分类键:', categoryKey);
         
         if (isEditing.value) {
           // 更新现有VPS
