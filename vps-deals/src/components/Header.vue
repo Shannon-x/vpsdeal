@@ -128,11 +128,11 @@
     
     <!-- 标题区域 -->
     <div class="w-full bg-gradient-to-r from-secondary-50 to-primary-50 px-4 md:px-6 transition-all duration-300 header-title-container"
-         :class="{ 'py-8': !isScrolled, 'py-4': isScrolled }">
+         :class="{ 'py-6': !isScrolled, 'py-3': isScrolled }">
       <div class="max-w-4xl mx-auto text-center relative">
         <h1 class="text-2xl md:text-3xl font-bold text-gray-900" :class="{ 'md:text-4xl': !isScrolled }">{{ siteTitle }}</h1>
         <transition name="fade">
-          <p v-if="!isScrolled" class="text-md md:text-lg text-gray-600 mt-2 description-text">{{ siteDescription }}</p>
+          <p v-if="!isScrolled" class="text-md md:text-lg text-gray-600 mt-1 description-text">{{ siteDescription }}</p>
         </transition>
         <!-- 占位元素确保高度一致 -->
         <div v-if="isScrolled" class="description-placeholder"></div>
@@ -288,7 +288,7 @@ export default {
 
 /* 标题区域布局 */
 .header-title-container {
-  min-height: 110px; /* 设置最小高度，确保空间足够 */
+  min-height: 80px; /* 减小最小高度，从110px减到80px */
   display: flex;
   align-items: center;
 }
@@ -307,11 +307,11 @@ export default {
 
 /* 占位元素保持相同高度 */
 .description-placeholder {
-  height: 28px; /* 与描述文本高度相同 */
+  height: 24px; /* 减小高度，从28px减到24px */
 }
 
 /* 描述文本容器 */
 .description-text {
-  height: 28px; /* 固定描述文本高度 */
+  height: 24px; /* 减小高度，从28px减到24px */
 }
 </style>
