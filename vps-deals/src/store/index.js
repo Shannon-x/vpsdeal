@@ -151,19 +151,29 @@ const decrypt = (encoded) => {
 // 将数据保存到localStorage
 const saveToLocalStorage = (data) => {
   try {
-    localStorage.setItem('vps-data', JSON.stringify({
-      kvmDeals: data.kvmDeals,
-      natDeals: data.natDeals,
-      highSpecDeals: data.highSpecDeals,
-      storageDeals: data.storageDeals,
-      vdsDeals: data.vdsDeals,
-      freeDeals: data.freeDeals,
-      dedicatedDeals: data.dedicatedDeals,
-      monthlyUnder2Deals: data.monthlyUnder2Deals || [],
-      annualUnder15Deals: data.annualUnder15Deals || [],
-      annualUnder25Deals: data.annualUnder25Deals || [],
-      natOpenVZDeals: data.natOpenVZDeals || []
-    }));
+    // 创建一个包含所有可能分类的对象
+    const dataToSave = {};
+    
+    // 添加所有标准分类
+    const categoryKeys = [
+      'kvmDeals', 'natDeals', 'highSpecDeals', 'storageDeals', 
+      'vdsDeals', 'freeDeals', 'dedicatedDeals', 
+      'monthlyUnder2Deals', 'annualUnder15Deals', 'annualUnder25Deals', 'natOpenVZDeals'
+    ];
+    
+    // 遍历所有标准分类键，保存对应的数据
+    categoryKeys.forEach(key => {
+      dataToSave[key] = data[key] || [];
+    });
+    
+    // 添加额外的分类数据(如果存在)
+    Object.keys(data).forEach(key => {
+      if (key.endsWith('Deals') && !categoryKeys.includes(key)) {
+        dataToSave[key] = data[key];
+      }
+    });
+    
+    localStorage.setItem('vps-data', JSON.stringify(dataToSave));
     console.log('数据保存成功，包含分类:', Object.keys(JSON.parse(localStorage.getItem('vps-data'))));
   } catch (e) {
     console.error('保存数据到本地存储失败：', e);
@@ -1084,16 +1094,21 @@ const store = createStore({
       let stateKey = category;
       
       // 特殊映射处理
-      if (category === 'vpsDeals') {
-        stateKey = 'kvmDeals';
-      } else if (category === 'monthly2') {
-        stateKey = 'monthlyUnder2Deals';
-      } else if (category === 'annual15') {
-        stateKey = 'annualUnder15Deals';
-      } else if (category === 'annual25') {
-        stateKey = 'annualUnder25Deals';
-      } else if (category === 'natopenVZ') {
-        stateKey = 'natOpenVZDeals';
+      const categoryMapping = {
+        'vpsDeals': 'kvmDeals',
+        'monthly2': 'monthlyUnder2Deals',
+        'annual15': 'annualUnder15Deals',
+        'annual25': 'annualUnder25Deals',
+        'natopenVZ': 'natOpenVZDeals',
+        'highSpec': 'highSpecDeals',
+        'storage': 'storageDeals',
+        'free': 'freeDeals',
+        'vds': 'vdsDeals'
+      };
+      
+      // 先检查映射表
+      if (categoryMapping[category]) {
+        stateKey = categoryMapping[category];
       } else if (!category.endsWith('Deals') && category !== 'categories' && category !== 'siteSettings') {
         // 自动为非标准分类名添加"Deals"后缀
         stateKey = category + 'Deals';
@@ -1283,17 +1298,21 @@ const store = createStore({
     getDeals: (state) => (category) => {
       // 处理映射关系
       const categoryMapping = {
+        // 标准分类ID
         'monthlyUnder2Deals': state.monthlyUnder2Deals || [],
         'annualUnder15Deals': state.annualUnder15Deals || [],
         'annualUnder25Deals': state.annualUnder25Deals || [],
         'natOpenVZDeals': state.natOpenVZDeals || [],
         'highSpecDeals': state.highSpecDeals || [],
+        'kvmDeals': state.kvmDeals || [],
         'vpsDeals': state.kvmDeals || [],
         'vdsDeals': state.vdsDeals || [],
         'dedicatedDeals': state.dedicatedDeals || [],
         'freeDeals': state.freeDeals || [],
         'storageDeals': state.storageDeals || [],
-        // 添加路由名称映射
+        'natDeals': state.natDeals || [],
+        
+        // 路由ID映射
         'monthly2': state.monthlyUnder2Deals || [],
         'annual15': state.annualUnder15Deals || [],
         'annual25': state.annualUnder25Deals || [],
@@ -1301,7 +1320,10 @@ const store = createStore({
         'highSpec': state.highSpecDeals || [],
         'storage': state.storageDeals || [],
         'free': state.freeDeals || [],
-        'vds': state.vdsDeals || []
+        'vds': state.vdsDeals || [],
+        'kvm': state.kvmDeals || [],
+        'nat': state.natDeals || [],
+        'dedicated': state.dedicatedDeals || []
       };
 
       console.log('请求分类:', category);
