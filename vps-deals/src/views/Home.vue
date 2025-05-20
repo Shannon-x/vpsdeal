@@ -81,91 +81,12 @@
             </div>
             
             <div class="prose max-w-none text-gray-600">
-              <div v-if="currentCategory === 'monthly2'">
-                <p>月付2美元以下VPS是适合小型网站、个人博客或学习测试使用的经济实惠选择。这些VPS特点如下：</p>
-                <ul class="list-disc pl-5 my-4">
-                  <li>超低价格，月付2美元以下</li>
-                  <li>基础配置，适合轻量级应用</li>
-                  <li>通常带有一定的流量限制</li>
-                  <li>适合个人学习使用或低流量网站</li>
-                  <li>性价比较高，入门级选择</li>
-                </ul>
-                <p>尽管价格便宜，我们精选的此类VPS仍然保证基本的稳定性和可用性。</p>
-                </div>
-              
-              <div v-else-if="currentCategory === 'annual15'">
-                <p>年付15美元以下VPS提供了更好的性价比，适合长期稳定运行的小型项目。这类VPS的特点包括：</p>
-                <ul class="list-disc pl-5 my-4">
-                  <li>年付总价格低于15美元，平均月费约1.25美元</li>
-                  <li>相比月付方案有更大的折扣</li>
-                  <li>适合长期运行的小型网站和应用</li>
-                  <li>基本配置通常包括1核CPU、512MB-1GB内存</li>
-                  <li>稳定可靠，适合建站新手</li>
-                </ul>
-                <p>这些VPS非常适合预算有限但需要长期稳定服务的用户。</p>
-              </div>
-              
-              <div v-else-if="currentCategory === 'annual25'">
-                <p>年付25美元以下的VPS提供了更好的配置和性能，同时仍保持较低的价格。主要特点有：</p>
-                <ul class="list-disc pl-5 my-4">
-                  <li>年付总价在15-25美元之间</li>
-                  <li>通常提供1-2核CPU、1-2GB内存</li>
-                  <li>存储空间更大，通常为20-40GB</li>
-                  <li>带宽和流量限制更为宽松</li>
-                  <li>适合中小型网站和应用程序</li>
-                </ul>
-                <p>这类VPS在性能和价格之间取得了很好的平衡，适合大多数个人网站和小型企业使用。</p>
-                </div>
-              
-              <div v-else-if="currentCategory === 'natopenVZ'">
-                <p>NAT/OpenVZ主机采用轻量级的虚拟化技术，提供高效但资源共享的VPS环境。其特点包括：</p>
-                <ul class="list-disc pl-5 my-4">
-                  <li>使用OpenVZ虚拟化技术，资源利用率高</li>
-                  <li>NAT网络模式，共享IP地址</li>
-                  <li>价格极为低廉，通常是最便宜的VPS选择</li>
-                  <li>适合轻量级应用和代理服务</li>
-                  <li>资源超售率较高，但价格极具吸引力</li>
-                </ul>
-                <p>这类VPS主要适合对网络性能要求不高的应用场景，或用作辅助服务器。</p>
-              </div>
-              
-              <div v-else-if="currentCategory === 'highSpec'">
-                <p>高配VPS主机提供更强大的性能和资源，适合资源密集型应用和高流量网站。主要特点如下：</p>
-                <ul class="list-disc pl-5 my-4">
-                  <li>多核CPU配置，通常4核以上</li>
-                  <li>大内存设计，通常8GB以上</li>
-                  <li>高速SSD存储，容量更大</li>
-                  <li>带宽更高，通常提供1Gbps以上的网络连接</li>
-                  <li>适合高流量网站、数据库服务和企业应用</li>
-                </ul>
-                <p>高配VPS虽然价格较高，但能满足对计算资源和性能有更高要求的场景。</p>
-                </div>
-              
-              <div v-else-if="currentCategory === 'storage'">
-                <p>存储型VPS专为大容量数据存储和备份设计，提供大容量的硬盘空间。特点包括：</p>
-                <ul class="list-disc pl-5 my-4">
-                  <li>超大硬盘空间，通常在100GB以上</li>
-                  <li>可能使用HDD硬盘以提供更大容量</li>
-                  <li>适合文件存储、备份和媒体服务器</li>
-                  <li>通常带有较高的月流量限制</li>
-                  <li>CPU和内存配置适中，专注于存储性能</li>
-                </ul>
-                <p>存储型VPS是需要大量存储空间但计算需求适中的应用的理想选择。</p>
-              </div>
+              <div v-html="categoryIntroContent"></div>
             </div>
           </div>
           
           <!-- 主页或无过滤时显示所有分类 -->
           <template v-if="!filter || filter === 'home'">
-            <!-- 月付2美元以下 VPS 部分 -->
-            <VpsSection 
-              title="月付2美元以下 VPS" 
-              description="超低价格的入门级VPS，适合个人学习和测试使用"
-              :vpsList="monthlyUnder2Deals" 
-              sectionId="monthly2"
-              @show-intro="showIntro('monthly2')"
-            />
-            
             <!-- 年付15美元以下 VPS 部分 -->
             <VpsSection 
               title="年付15美元以下 VPS" 
@@ -182,6 +103,33 @@
               :vpsList="annualUnder25Deals" 
               sectionId="annual25"
               @show-intro="showIntro('annual25')"
+            />
+            
+            <!-- 月付2美元以下 VPS 部分 -->
+            <VpsSection 
+              title="月付2美元以下 VPS" 
+              description="超低价格的入门级VPS，适合个人学习和测试使用"
+              :vpsList="monthlyUnder2Deals" 
+              sectionId="monthly2"
+              @show-intro="showIntro('monthly2')"
+            />
+            
+            <!-- 免费VPS 部分 -->
+            <VpsSection 
+              title="免费VPS"
+              description="免费使用的虚拟服务器，适合简单测试和学习使用"
+              :vpsList="freeDeals"
+              sectionId="free"
+              @show-intro="showIntro('free')"
+            />
+            
+            <!-- VDS服务器 部分 -->
+            <VpsSection 
+              title="VDS服务器"
+              description="专用虚拟服务器，提供更好的隔离性和专属资源"
+              :vpsList="vdsDeals"
+              sectionId="vds"
+              @show-intro="showIntro('vds')"
             />
             
             <!-- NAT/OpenVZ主机 部分 -->
@@ -210,38 +158,10 @@
               sectionId="storage"
               @show-intro="showIntro('storage')"
             />
-            
-            <!-- 免费VPS 部分 -->
-            <VpsSection 
-              title="免费VPS"
-              description="免费使用的虚拟服务器，适合简单测试和学习使用"
-              :vpsList="freeDeals"
-              sectionId="free"
-              @show-intro="showIntro('free')"
-            />
-            
-            <!-- VDS服务器 部分 -->
-            <VpsSection 
-              title="VDS服务器"
-              description="专用虚拟服务器，提供更好的隔离性和专属资源"
-              :vpsList="vdsDeals"
-              sectionId="vds"
-              @show-intro="showIntro('vds')"
-            />
           </template>
           
           <!-- 按过滤显示特定分类 -->
           <template v-else>
-            <!-- 月付2美元以下 VPS 部分 -->
-            <VpsSection 
-              v-if="filter === 'monthly2'"
-              title="月付2美元以下 VPS" 
-              description="超低价格的入门级VPS，适合个人学习和测试使用"
-              :vpsList="monthlyUnder2Deals" 
-              sectionId="monthly2"
-              @show-intro="showIntro('monthly2')"
-            />
-            
             <!-- 年付15美元以下 VPS 部分 -->
             <VpsSection 
               v-if="filter === 'annual15'"
@@ -260,6 +180,36 @@
               :vpsList="annualUnder25Deals" 
               sectionId="annual25"
               @show-intro="showIntro('annual25')"
+            />
+            
+            <!-- 月付2美元以下 VPS 部分 -->
+            <VpsSection 
+              v-if="filter === 'monthly2'"
+              title="月付2美元以下 VPS" 
+              description="超低价格的入门级VPS，适合个人学习和测试使用"
+              :vpsList="monthlyUnder2Deals" 
+              sectionId="monthly2"
+              @show-intro="showIntro('monthly2')"
+            />
+            
+            <!-- 免费VPS 部分 -->
+            <VpsSection 
+              v-if="filter === 'free'"
+              title="免费VPS"
+              description="免费使用的虚拟服务器，适合简单测试和学习使用"
+              :vpsList="freeDeals"
+              sectionId="free"
+              @show-intro="showIntro('free')"
+            />
+            
+            <!-- VDS服务器 部分 -->
+            <VpsSection 
+              v-if="filter === 'vds'"
+              title="VDS服务器"
+              description="专用虚拟服务器，提供更好的隔离性和专属资源"
+              :vpsList="vdsDeals"
+              sectionId="vds"
+              @show-intro="showIntro('vds')"
             />
             
             <!-- NAT/OpenVZ主机 部分 -->
@@ -290,26 +240,6 @@
               :vpsList="storageDeals" 
               sectionId="storage"
               @show-intro="showIntro('storage')"
-            />
-            
-            <!-- 免费VPS 部分 -->
-            <VpsSection 
-              v-if="filter === 'free'"
-              title="免费VPS"
-              description="免费使用的虚拟服务器，适合简单测试和学习使用"
-              :vpsList="freeDeals"
-              sectionId="free"
-              @show-intro="showIntro('free')"
-            />
-            
-            <!-- VDS服务器 部分 -->
-            <VpsSection 
-              v-if="filter === 'vds'"
-              title="VDS服务器"
-              description="专用虚拟服务器，提供更好的隔离性和专属资源"
-              :vpsList="vdsDeals"
-              sectionId="vds"
-              @show-intro="showIntro('vds')"
             />
           </template>
         
@@ -389,8 +319,8 @@ export default {
           break;
       }
       
-      // 滚动到页面顶部
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // 立即跳转到页面顶部，避免头部高度抖动
+      window.scrollTo(0, 0);
     };
     
     // 获取VPS列表数据
@@ -498,6 +428,24 @@ export default {
       }
     });
     
+    // 可配置的分类介绍内容（将 Section ID 映射到 store 分类 ID）
+    const categories = computed(() => store.getters.getAllCategories);
+    const categoryIntroContent = computed(() => {
+      const idMap = {
+        annual15: 'under15',
+        annual25: 'under25',
+        monthly2: 'monthly',
+        free: 'free',
+        vds: 'vds',
+        natopenVZ: 'nat',
+        highSpec: 'highspec',
+        storage: 'storage'
+      };
+      const internalId = idMap[currentCategory.value] || currentCategory.value;
+      const cat = categories.value.find(c => c.id === internalId);
+      return cat && cat.description ? cat.description : '';
+    });
+    
     return {
       monthlyUnder2Deals,
       annualUnder15Deals,
@@ -512,7 +460,8 @@ export default {
       showCategoryIntro,
       currentCategory,
       categoryIntroTitle,
-      showIntro
+      showIntro,
+      categoryIntroContent
     };
   }
 }

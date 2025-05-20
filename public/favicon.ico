@@ -1,5 +1,0 @@
-<!-- 这是一个简单的占位图标文件 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" fill="#4f46e5"/>
-  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="8" fill="white">VPS</text>
-</svg>

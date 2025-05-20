@@ -285,10 +285,12 @@ const defaultCategories = [
   { id: 'under15', name: '年付15美元以下', path: '/under15', isMainNav: true, order: 1 },
   { id: 'under25', name: '年付25美元以下', path: '/under25', isMainNav: true, order: 2 },
   { id: 'monthly', name: '月付2美元以下', path: '/monthly', isMainNav: true, order: 3 },
-  { id: 'nat', name: 'NAT/OpenVZ主机', path: '/nat', isMainNav: true, order: 4 },
-  { id: 'storage', name: '存储型主机', path: '/storage', isMainNav: false, order: 5 },
-  { id: 'highspec', name: '高配VPS主机', path: '/highspec', isMainNav: false, order: 6 },
-  { id: 'contact', name: '联系我们', path: '/contact', isMainNav: false, order: 7 }
+  { id: 'free', name: '免费VPS', path: '/free', isMainNav: true, order: 4 },
+  { id: 'vds', name: 'VDS服务器', path: '/vds', isMainNav: true, order: 5 },
+  { id: 'nat', name: 'NAT/OpenVZ主机', path: '/nat', isMainNav: true, order: 6 },
+  { id: 'storage', name: '存储型主机', path: '/storage', isMainNav: false, order: 7 },
+  { id: 'highspec', name: '高配VPS主机', path: '/highspec', isMainNav: false, order: 8 },
+  { id: 'contact', name: '联系我们', path: '/contact', isMainNav: false, order: 9 }
 ];
 
 // 加载导航分类设置
@@ -785,7 +787,8 @@ const store = createStore({
         name: category.name,
         path,
         isMainNav: category.isMainNav || false,
-        order: state.categories.length
+        order: state.categories.length,
+        description: category.description || ''
       };
       
       state.categories.push(newCategory);

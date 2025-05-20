@@ -200,6 +200,17 @@
                 </label>
                 <p class="mt-1 text-sm text-gray-500">如果勾选，系统将自动创建对应的VPS数据集合，供您添加新的VPS数据</p>
               </div>
+              <div class="mt-4">
+                <label for="category-description" class="block text-sm font-medium text-gray-700">分类简介</label>
+                <textarea
+                  v-model="currentCategory.description"
+                  id="category-description"
+                  rows="4"
+                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="请输入了解分类内容，支持HTML"
+                ></textarea>
+                <p class="mt-1 text-xs text-gray-500">可使用 &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt; 等HTML标签</p>
+              </div>
             </div>
           </div>
           
@@ -345,7 +356,8 @@ export default {
       name: '',
       pathSegment: '',
       isMainNav: false,
-      createCollection: false
+      createCollection: true,
+      description: ''
     });
     const categoryToDelete = ref(null);
     
@@ -370,7 +382,8 @@ export default {
         name: '',
         pathSegment: '',
         isMainNav: false,
-        createCollection: true
+        createCollection: true,
+        description: ''
       };
       showModal.value = true;
     };
@@ -383,7 +396,8 @@ export default {
       currentCategory.value = { 
         ...category, 
         pathSegment,
-        createCollection: false 
+        createCollection: false,
+        description: category.description || ''
       };
       showModal.value = true;
     };
@@ -420,7 +434,8 @@ export default {
             category: {
               name: currentCategory.value.name,
               path: path,
-              isMainNav: currentCategory.value.isMainNav
+              isMainNav: currentCategory.value.isMainNav,
+              description: currentCategory.value.description
             }
           });
         } else {
@@ -429,7 +444,8 @@ export default {
             name: currentCategory.value.name,
             path: path,
             isMainNav: currentCategory.value.isMainNav,
-            createCollection: currentCategory.value.createCollection
+            createCollection: currentCategory.value.createCollection,
+            description: currentCategory.value.description
           });
         }
         

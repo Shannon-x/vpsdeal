@@ -104,22 +104,18 @@
         </div>
       </div>
     </main>
-    
-    <SimpleFooter />
   </div>
 </template>
 
 <script>
 import Header from '../components/Header.vue';
-import SimpleFooter from '../components/SimpleFooter.vue';
 import { ref } from 'vue';
 import { useStore } from 'vuex';
 
 export default {
   name: 'Contact',
   components: {
-    Header,
-    SimpleFooter
+    Header
   },
   setup() {
     const store = useStore();
