@@ -127,11 +127,15 @@
       </div>
     
     <!-- 标题区域 -->
-    <div class="w-full bg-gradient-to-r from-secondary-50 to-primary-50 py-6 px-4 md:px-6 transition-all duration-300"
+    <div class="w-full bg-gradient-to-r from-secondary-50 to-primary-50 px-4 md:px-6 transition-all duration-300 header-title-container"
          :class="{ 'py-8': !isScrolled, 'py-4': isScrolled }">
-      <div class="max-w-4xl mx-auto text-center">
+      <div class="max-w-4xl mx-auto text-center relative">
         <h1 class="text-2xl md:text-3xl font-bold text-gray-900" :class="{ 'md:text-4xl': !isScrolled }">{{ siteTitle }}</h1>
-        <p v-if="!isScrolled" class="text-md md:text-lg text-gray-600 mt-2">{{ siteDescription }}</p>
+        <transition name="fade">
+          <p v-if="!isScrolled" class="text-md md:text-lg text-gray-600 mt-2 description-text">{{ siteDescription }}</p>
+        </transition>
+        <!-- 占位元素确保高度一致 -->
+        <div v-if="isScrolled" class="description-placeholder"></div>
       </div>
     </div>
   </header>
@@ -255,18 +259,18 @@ export default {
   width: 0;
   background-color: var(--color-primary-600);
   transition: width 0.3s ease;
-  }
+}
   
 .nav-link:hover .nav-indicator,
 .router-link-exact-active .nav-indicator,
 .router-link-active .nav-indicator {
   width: 100%;
-  }
+}
   
 /* 导航菜单动画 */
 .animate-fadeDown {
   animation: fadeDown 0.5s ease-in-out;
-  }
+}
 
 .animate-slideDown {
   animation: slideDown 0.3s ease-in-out;
@@ -280,5 +284,34 @@ export default {
 @keyframes slideDown {
   from { opacity: 0; max-height: 0; }
   to { opacity: 1; max-height: 500px; }
+}
+
+/* 标题区域布局 */
+.header-title-container {
+  min-height: 110px; /* 设置最小高度，确保空间足够 */
+  display: flex;
+  align-items: center;
+}
+
+/* 描述文本淡入淡出动画 */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+  position: absolute;
+  width: 100%;
+  left: 0;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+/* 占位元素保持相同高度 */
+.description-placeholder {
+  height: 28px; /* 与描述文本高度相同 */
+}
+
+/* 描述文本容器 */
+.description-text {
+  height: 28px; /* 固定描述文本高度 */
 }
 </style>
