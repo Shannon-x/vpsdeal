@@ -216,3 +216,67 @@ Tailwind CSS主题配置在 `tailwind.config.js` 文件中，可以根据需要�
 ## 许可证
 
 MIT 许可证# 测试更改
+
+## 后端服务
+
+### 安装后端依赖
+```bash
+cd server
+npm install express cors body-parser jsonwebtoken
+```
+
+### 启动后端服务
+```bash
+# 在 server 目录下
+npm run start  # 或 node index.js
+```
+
+### API 接口
+- GET `/api/vps`：获取所有分类的 VPS 数据，返回 JSON 对象。  
+- GET `/api/vps/:category`：获取指定分类的 VPS 列表。  
+- POST `/api/vps/:category`：添加 VPS，需要在请求头 `Authorization: Bearer <token>` 中提供 JWT。  
+- PUT `/api/vps/:category/:index`：编辑 VPS，需要认证。  
+- DELETE `/api/vps/:category/:index`：删除 VPS，需要认证。  
+- POST `/api/login`：管理员登录， body `{ "username":"...", "password":"..." }`，成功返回 `{ "token": "<JWT>" }`。
+
+## 前端配置
+
+### 安装前端依赖
+```bash
+cd vps-deals
+npm install
+npm install axios
+```
+
+### 配置 API 地址
+在 `src/services/api.js` 中修改 `API_BASE_URL` 为后端服务器地址，例如：
+```js
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000/api';
+```
+
+### 启动前端
+```bash
+npm run serve
+```
+
+这样，管理员在后台添加的 VPS 数据将保存在服务器上，前端用户打开网页时即可看到最新数据。
+
+## Docker 部署
+
+此项目可以使用 Docker 和 Docker Compose 快速部署前后端服务。
+
+1. 构建并启动容器
+
+```bash
+docker-compose up --build -d
+```
+
+2. 访问服务
+- 前端页面： http://localhost:8080
+- 后端 API： http://localhost:3000/api
+
+3. 停止并删除容器
+
+```bash
+docker-compose down
+```

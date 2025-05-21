@@ -181,91 +181,19 @@ export default {
       }
     });
     
-    // 登录验证
+    // 登录验证，使用后端 API 并调用 Vuex 登录 action
     const login = async () => {
-      // 清除之前的错误
       error.value = '';
       isLoading.value = true;
-      
-      // 检查登录凭据是否为空
-      if (!username.value || !password.value) {
-        error.value = '请输入用户名和密码';
-        isLoading.value = false;
-        return;
-      }
-      
-      // 检查账户是否被锁定
-      if (isLocked.value) {
-        error.value = `账户已被锁定，请在 ${remainingTime.value} 分钟后重试`;
-        isLoading.value = false;
-        return;
-      }
-      
-      console.log('开始登录验证');
-      
       try {
-        // 获取登录结果
-        const result = await new Promise((resolve) => {
-          // 调用store的login方法
-          const loginResult = store.commit('login', {
-            username: username.value,
-            password: password.value
-          });
-          
-          // 如果异步处理中，等待一段时间检查登录状态
-          if (loginResult && loginResult.success === 'pending') {
-            console.log('登录请求处于等待状态，等待验证...');
-            setTimeout(() => {
-              if (store.getters.isLoggedIn) {
-                resolve({ success: true });
-              } else {
-                resolve({ success: false });
-              }
-            }, 1000); // 给异步验证一些时间
-          } else {
-            // 如果是同步结果
-            resolve(loginResult || { success: store.getters.isLoggedIn });
-          }
-        });
-        
-        // 检查登录状态
-        if (result.success === true || store.getters.isLoggedIn) {
-          console.log('登录成功，由watch处理跳转');
-        } else {
-          // 登录失败
-          // 从localStorage获取登录尝试信息
-          try {
-            const loginAttemptsData = localStorage.getItem('login-attempts');
-            if (loginAttemptsData) {
-              const attemptsData = JSON.parse(loginAttemptsData);
-              
-              if (attemptsData.lockedUntil > Date.now()) {
-                // 账户已锁定
-                isLocked.value = true;
-                remainingTime.value = Math.ceil((attemptsData.lockedUntil - Date.now()) / (60 * 1000));
-                error.value = `账户已被锁定，请在 ${remainingTime.value} 分钟后重试`;
-              } else {
-                // 显示剩余尝试次数
-                attempts.value = attemptsData.count;
-                const remaining = maxAttempts.value - attempts.value;
-                error.value = `用户名或密码不正确，还有 ${remaining > 0 ? remaining : 0} 次尝试机会`;
-                
-                // 如果剩余尝试次数为0，显示锁定警告
-                if (remaining <= 0) {
-                  error.value += '。继续尝试将导致账户锁定';
-                }
-              }
-            } else {
-              error.value = '用户名或密码不正确';
-            }
-          } catch (e) {
-            console.error('读取登录尝试失败:', e);
-            error.value = '用户名或密码不正确';
-          }
+        const success = await store.dispatch('login', { username: username.value, password: password.value });
+        if (!success) {
+          error.value = '用户名或密码错误';
         }
+        // 登录成功后，watcher 会自动跳转到管理面板
       } catch (e) {
-        console.error('登录过程中发生错误:', e);
-        error.value = '登录过程中发生错误，请重试';
+        console.error('登录失败:', e);
+        error.value = '登录失败，请重试';
       } finally {
         isLoading.value = false;
       }

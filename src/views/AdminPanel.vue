@@ -363,7 +363,7 @@
               <div v-if="categoryDeals && categoryDeals.length > 0" class="px-4 py-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <!-- VPS卡片 -->
-                  <div v-for="(vps, index) in categoryDeals" :key="index" class="bg-white border rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-300">
+                  <div v-for="(vps, index) in categoryDeals" :key="index" class="bg-white border rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col h-full">
                     <!-- 卡片顶部 -->
                     <div class="p-4 bg-gradient-to-r from-indigo-50 to-blue-50 border-b">
                       <div class="flex justify-between items-start">
@@ -382,7 +382,7 @@
                     </div>
                     
                     <!-- 卡片内容 -->
-                    <div class="p-4">
+                    <div class="p-4 flex flex-col flex-grow">
                       <!-- 配置详情 -->
                       <div class="mb-4">
                         <div class="grid grid-cols-2 gap-2 text-sm">
@@ -432,7 +432,7 @@
                       </div>
                       
                       <!-- 卡片底部 - 操作按钮 -->
-                      <div class="flex flex-col space-y-2">
+                      <div class="flex flex-col space-y-2 mt-auto">
                         <div class="flex justify-between">
                           <a :href="vps.link" target="_blank" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors w-full">
                             {{ vps.buttonText || '立即购买' }}
@@ -914,7 +914,7 @@ export default {
     };
     
     // 方法：保存VPS数据
-    const saveVps = () => {
+    const saveVps = async () => {
       console.log('保存VPS数据:', currentVps.value);
       console.log('isEditing:', isEditing.value, 'editIndex:', editIndex.value);
       
@@ -924,16 +924,16 @@ export default {
         console.log('使用分类键:', categoryKey);
         
         if (isEditing.value) {
-          // 更新现有VPS
-          store.commit('updateVps', {
+          // 更新现有VPS到后端
+          await store.dispatch('updateVpsServer', {
             category: categoryKey,
             index: editIndex.value,
             vps: currentVps.value
           });
           console.log('VPS更新成功');
         } else {
-          // 添加新VPS
-          store.commit('addVps', {
+          // 添加新VPS到后端
+          await store.dispatch('addVpsServer', {
             category: categoryKey,
             vps: currentVps.value
           });
@@ -973,8 +973,8 @@ export default {
     const confirmDelete = (index) => {
       showConfirm.value = true;
       confirmMessage.value = '确定要删除这个VPS吗？此操作不可撤销。';
-      confirmAction.value = () => {
-        store.commit('deleteVps', {
+      confirmAction.value = async () => {
+        await store.dispatch('deleteVpsServer', {
           category: selectedCategory.value,
           index: index
         });

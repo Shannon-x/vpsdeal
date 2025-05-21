@@ -2,6 +2,7 @@ import { createStore } from 'vuex';
 import { kvmDeals, natDeals, highSpecDeals, storageDeals, vdsDeals, freeDeals, dedicatedDeals } from '../data/vps-deals';
 import vpsDealsData from '../data/vps-deals';
 import bcrypt from 'bcryptjs';
+import { getVpsData, login as loginApi, addVps as addVpsApi, updateVps as updateVpsApi, deleteVps as deleteVpsApi } from '../services/api';
 
 // 安全性增强：使用更强的加密方法代替简单的Base64编码
 // 注意：这只是前端防护，真正安全的做法是使用后端认证系统
@@ -621,7 +622,8 @@ const store = createStore({
       adminAuth: {
         isLoggedIn: false,
         username: '',
-        credentials: latestCredentials
+        credentials: latestCredentials,
+        token: null
       },
       // VPS数据(确保接收从loadFromLocalStorage加载的数据)
       userMessages: loadUserMessages(),
@@ -1012,81 +1014,10 @@ const store = createStore({
       // 从localStorage中删除登录状态
       localStorage.removeItem('admin-auth');
     },
-    // 检查本地存储的登录状态
+    // 基于 JWT token 检查登录状态
     checkLoginStatus(state) {
-      console.log('执行登录状态检查...');
-      
-      try {
-        const authData = localStorage.getItem('admin-auth');
-        const credentialsData = localStorage.getItem('admin-credentials');
-        
-        // 如果没有认证数据或凭据数据，确保未登录
-        if (!authData || !credentialsData) {
-          console.log('未找到认证数据或凭据数据，设置为未登录状态');
-          state.adminAuth.isLoggedIn = false;
-          state.adminAuth.username = '';
-          return;
-        }
-        
-        // 解析存储的数据
-        const auth = JSON.parse(authData);
-        const credentials = JSON.parse(credentialsData);
-        
-        console.log('读取到登录状态:', auth.isLoggedIn, '用户名:', auth.username);
-        
-        // 确保auth包含所有必需的字段
-        if (!auth.isLoggedIn || !auth.username || !auth.timestamp) {
-          console.error('登录数据不完整，设置为未登录状态');
-          localStorage.removeItem('admin-auth');
-          state.adminAuth.isLoggedIn = false;
-          state.adminAuth.username = '';
-          return;
-        }
-        
-        // 检查凭据是否包含所需字段 - 修复：bcrypt模式下可能没有password字段，而是使用passwordHash
-        if (!credentials.username || (!credentials.password && !credentials.passwordHash)) {
-          console.error('凭据数据不完整，设置为未登录状态');
-          localStorage.removeItem('admin-credentials');
-          localStorage.removeItem('admin-auth');
-          state.adminAuth.isLoggedIn = false;
-          state.adminAuth.username = '';
-          return;
-        }
-        
-        // 登录状态一天后过期
-        const isExpired = Date.now() - auth.timestamp > 24 * 60 * 60 * 1000;
-        
-        if (isExpired) {
-          console.log('登录状态已过期，需要重新登录');
-          localStorage.removeItem('admin-auth');
-          state.adminAuth.isLoggedIn = false;
-          state.adminAuth.username = '';
-          return;
-        }
-        
-        // 确保凭据和登录状态匹配
-        if (auth.isLoggedIn && credentials && auth.username === credentials.username) {
-          console.log('登录状态有效，用户:', auth.username);
-          state.adminAuth.isLoggedIn = true;
-          state.adminAuth.username = auth.username;
-          
-          // 确保凭据同步到state
-          state.adminAuth.credentials = credentials;
-        } else {
-          // 凭据不匹配，清除登录状态
-          console.error('用户名不匹配，清除登录状态');
-          localStorage.removeItem('admin-auth');
-          state.adminAuth.isLoggedIn = false;
-          state.adminAuth.username = '';
-        }
-      } catch (e) {
-        console.error('读取登录状态失败：', e);
-        // 发生错误时，清除所有认证数据
-        localStorage.removeItem('admin-auth');
-        localStorage.removeItem('admin-credentials');
-        state.adminAuth.isLoggedIn = false;
-        state.adminAuth.username = '';
-      }
+      const token = localStorage.getItem('token');
+      state.adminAuth.isLoggedIn = !!token;
     },
     // 初始化集合
     initializeCollection(state, category) {
@@ -1292,6 +1223,17 @@ const store = createStore({
       } catch (e) {
         console.error('重置管理员凭据失败:', e);
       }
+    },
+    // 设置服务器获取的 VPS 数据
+    setVpsData(state, data) {
+      Object.keys(data).forEach(category => {
+        state[category] = data[category];
+      });
+    },
+    // 设置登录状态
+    setLogin(state, token) {
+      state.adminAuth.token = token;
+      state.adminAuth.isLoggedIn = true;
     }
   },
   getters: {
@@ -1427,11 +1369,49 @@ const store = createStore({
         return true;
       }
       return false;
+    },
+    // 从后端获取所有 VPS 数据
+    async fetchVpsData({ commit }) {
+      try {
+        const res = await getVpsData();
+        commit('setVpsData', res.data);
+      } catch (error) {
+        console.error('获取 VPS 数据失败', error);
+      }
+    },
+    // 管理员登录
+    async login({ commit }, { username, password }) {
+      try {
+        const res = await loginApi(username, password);
+        localStorage.setItem('token', res.data.token);
+        commit('setLogin', res.data.token);
+        return true;
+      } catch (e) {
+        console.error('登录失败', e);
+        return false;
+      }
+    },
+    // 添加 VPS 到服务器并刷新数据
+    async addVpsServer({ dispatch, state }, { category, vps }) {
+      await addVpsApi(category, vps, state.adminAuth.token);
+      await dispatch('fetchVpsData');
+    },
+    // 编辑 VPS 并刷新数据
+    async updateVpsServer({ dispatch, state }, { category, index, vps }) {
+      await updateVpsApi(category, index, vps, state.adminAuth.token);
+      await dispatch('fetchVpsData');
+    },
+    // 删除 VPS 并刷新数据
+    async deleteVpsServer({ dispatch, state }, { category, index }) {
+      await deleteVpsApi(category, index, state.adminAuth.token);
+      await dispatch('fetchVpsData');
     }
   }
 });
 
 // 初始化时检查登录状态
 store.dispatch('init');
+// 初始化时获取后端 VPS 数据
+store.dispatch('fetchVpsData');
 
 export default store;
