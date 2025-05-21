@@ -272,8 +272,8 @@ docker-compose up --build -d
 ```
 
 2. 访问服务
-- 前端页面： http://localhost:8080
-- 后端 API： http://localhost:3000/api
+- 前端页面： http://localhost:18877
+- 后端 API： http://localhost:18876/api
 
 3. 停止并删除容器
 

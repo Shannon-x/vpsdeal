@@ -11,7 +11,7 @@ services:
     volumes:
       - ./server:/app
     ports:
-      - "3000:3000"
+      - "18876:3000"
 
   frontend:
     build:
