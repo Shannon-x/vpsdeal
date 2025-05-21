@@ -101,7 +101,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     // 强制刷新登录状态检查
-    store.commit('checkLoginStatus');
+    store.commit('syncLoginStatus');
     
     // 使用store来检查登录状态
     if (!store.getters.isLoggedIn) {

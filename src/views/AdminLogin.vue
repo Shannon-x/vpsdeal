@@ -148,36 +148,36 @@ export default {
     
     // 在组件挂载时检查登录状态和锁定状态
     onMounted(() => {
-      // 强制刷新登录状态检查
-      store.commit('checkLoginStatus');
+      store.commit('syncLoginStatus');
       
       // 检查账户是否被锁定
       try {
         const loginAttemptsData = localStorage.getItem('login-attempts');
         if (loginAttemptsData) {
-          const attempts = JSON.parse(loginAttemptsData);
+          const attemptsData = JSON.parse(loginAttemptsData); // Renamed to avoid conflict
           const now = Date.now();
           
-          if (attempts.lockedUntil > now) {
+          if (attemptsData.lockedUntil > now) {
             isLocked.value = true;
-            remainingTime.value = Math.ceil((attempts.lockedUntil - now) / (60 * 1000));
+            remainingTime.value = Math.ceil((attemptsData.lockedUntil - now) / (60 * 1000));
           }
         }
       } catch (e) {
         console.error('读取登录尝试记录失败:', e);
       }
       
-      // 如果用户已登录，直接重定向到管理面板
+      // 如果用户已登录，直接替换到管理面板，避免历史记录问题
       if (store.getters.isLoggedIn) {
-        router.push('/adminshuhao1031/panel');
+        router.replace('/adminshuhao1031/panel'); // Changed to replace
       }
     });
     
-    // 监听登录状态变化
-    watch(() => store.getters.isLoggedIn, (newValue) => {
-      if (newValue === true) {
-        console.log('检测到登录状态变为true，准备跳转到管理面板');
-        router.push('/adminshuhao1031/panel');
+    // 监听登录状态变化 (这个 watcher 仍然有用，处理登录操作成功后的跳转)
+    watch(() => store.getters.isLoggedIn, (newValue, oldValue) => {
+      // 只有当状态从 false 变为 true 时才跳转，避免不必要的重复跳转
+      if (newValue === true && oldValue === false) { 
+        console.log('检测到登录状态从false变为true，准备跳转到管理面板');
+        router.push('/adminshuhao1031/panel'); 
       }
     });
     

@@ -315,7 +315,7 @@ export default {
           localStorage.setItem('admin-auth', JSON.stringify(authData));
           
           // 强制刷新登录状态
-          store.commit('checkLoginStatus');
+          store.commit('syncLoginStatus');
           
           // 显示成功通知
           if (window.$notification) {

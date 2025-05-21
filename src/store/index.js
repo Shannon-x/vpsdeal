@@ -620,10 +620,9 @@ const store = createStore({
         timeout: 5000
       },
       adminAuth: {
-        isLoggedIn: false,
-        username: '',
-        credentials: latestCredentials,
-        token: null
+        isLoggedIn: !!localStorage.getItem('token'),
+        username: localStorage.getItem('username') || '',
+        token: localStorage.getItem('token') || null
       },
       // VPS数据(确保接收从loadFromLocalStorage加载的数据)
       userMessages: loadUserMessages(),
@@ -883,141 +882,36 @@ const store = createStore({
     hideNotification(state) {
       state.notification.show = false;
     },
-    // 管理员登录
-    login(state, { username, password }) {
-      if (!username || !password) {
-        return { success: false, message: '用户名或密码不能为空' };
-      }
-      
-      console.log('尝试登录，用户名:', username);
-      
-      // 强制拒绝旧的默认凭据 admin/admin
-      if (username === 'admin' && password === 'admin') {
-        incrementLoginFailures();
-        return { success: false, message: '旧凭据已弃用，请使用新的登录信息' };
-      }
-      
-      if (isAccountLocked()) {
-        const attempts = getLoginAttempts();
-        const remainingTime = Math.ceil((attempts.lockedUntil - Date.now()) / (60 * 1000));
-        return { success: false, locked: true, remainingMinutes: remainingTime };
-      }
-      
-      // 特殊处理默认凭据的直接登录
-      const isDefaultCredentials = username === 'shannon2206' && password === 'xetwuh-supqyw-7xidQy';
-      if (isDefaultCredentials) {
-        console.log('尝试使用默认凭据登录');
-      }
-      
-      // 加载动态凭据
-      let credentials;
-      try {
-        credentials = loadAdminCredentials();
-        console.log('加载凭据成功:', credentials.username);
-      } catch (e) {
-        console.error('加载管理员凭据失败:', e);
-        incrementLoginFailures();
-        return { success: false, message: '用户名或密码错误' };
-      }
-      
-      // 检查默认凭据特殊情况
-      if (isDefaultCredentials) {
-        // 如果尝试使用默认凭据，但实际已经自定义了密码
-        if (credentials.isCustomized) {
-          console.log('默认密码已被修改，拒绝使用默认凭据登录');
-          incrementLoginFailures();
-          return { success: false, message: '默认密码已被修改，请使用新密码登录' };
-        } else {
-          // 使用默认凭据且账户未自定义，允许直接登录
-          console.log('使用默认凭据直接登录成功');
-          resetLoginFailures();
-          state.adminAuth.isLoggedIn = true;
-          state.adminAuth.username = username;
-          state.adminAuth.credentials = credentials;
-          
-          const authData = { isLoggedIn: true, username, timestamp: Date.now() };
-          localStorage.setItem('admin-auth', JSON.stringify(authData));
-          
-          // 立即准备bcrypt哈希
-          hashPassword(password).then(hash => {
-            const updatedCredentials = {
-              username: username,
-              passwordHash: hash,
-              usesBcrypt: true,
-              isCustomized: false
-            };
-            localStorage.setItem('admin-credentials', JSON.stringify(updatedCredentials));
-          }).catch(e => {
-            console.error('生成哈希失败:', e);
-          });
-          
-          return { success: true };
-        }
-      }
-      
-      // 常规情况：检查用户名
-      if (username !== credentials.username) {
-        console.log('用户名不匹配:', username, '!=', credentials.username);
-        incrementLoginFailures();
-        return { success: false, message: '用户名或密码错误' };
-      }
-      
-      // 异步验证密码
-      verifyPassword(password, credentials.passwordHash || credentials.password).then(isValid => {
-        if (!isValid) {
-          console.log('密码验证失败');
-          incrementLoginFailures();
-          return { success: false, message: '用户名或密码错误' };
-        }
-        
-        // 登录成功
-        console.log('密码验证成功，登录成功');
-        resetLoginFailures();
+    // 基于 JWT token 同步登录状态
+    syncLoginStatus(state) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        state.adminAuth.token = token;
         state.adminAuth.isLoggedIn = true;
-        state.adminAuth.username = username;
-        state.adminAuth.credentials = credentials;
-        
-        // 如果是首次登录或未使用bcrypt，迁移到bcrypt存储
-        if (!credentials.passwordHash || !credentials.usesBcrypt) {
-          // 异步生成新的bcrypt哈希
-          hashPassword(password).then(hash => {
-            // 更新凭据
-            const updatedCredentials = {
-              username: username,
-              passwordHash: hash,
-              usesBcrypt: true,
-              isCustomized: isDefaultCredentials ? false : true
-            };
-            
-            // 更新state和localStorage
-            state.adminAuth.credentials = updatedCredentials;
-            localStorage.setItem('admin-credentials', JSON.stringify(updatedCredentials));
-            console.log('已迁移到bcrypt密码存储');
-          });
-        }
-        
-        const authData = { isLoggedIn: true, username, timestamp: Date.now() };
-        localStorage.setItem('admin-auth', JSON.stringify(authData));
-      }).catch(error => {
-        console.error('密码验证过程中出错:', error);
-        incrementLoginFailures();
-        return { success: false, message: '验证过程中出错' };
-      });
-      
-      // 返回验证中状态
-      return { success: 'pending' };
+        state.adminAuth.username = localStorage.getItem('username') || '';
+      } else {
+        state.adminAuth.token = null;
+        state.adminAuth.isLoggedIn = false;
+        state.adminAuth.username = '';
+      }
     },
-    // 管理员登出
+    // 设置登录状态
+    setLogin(state, { token, username }) {
+      localStorage.setItem('token', token);
+      state.adminAuth.token = token;
+      state.adminAuth.isLoggedIn = true;
+      if (username) {
+        state.adminAuth.username = username;
+        localStorage.setItem('username', username);
+      }
+    },
+    // 登出
     logout(state) {
       state.adminAuth.isLoggedIn = false;
       state.adminAuth.username = '';
-      // 从localStorage中删除登录状态
-      localStorage.removeItem('admin-auth');
-    },
-    // 基于 JWT token 检查登录状态
-    checkLoginStatus(state) {
-      const token = localStorage.getItem('token');
-      state.adminAuth.isLoggedIn = !!token;
+      state.adminAuth.token = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
     },
     // 初始化集合
     initializeCollection(state, category) {
@@ -1229,11 +1123,6 @@ const store = createStore({
       Object.keys(data).forEach(category => {
         state[category] = data[category];
       });
-    },
-    // 设置登录状态
-    setLogin(state, token) {
-      state.adminAuth.token = token;
-      state.adminAuth.isLoggedIn = true;
     }
   },
   getters: {
@@ -1318,7 +1207,7 @@ const store = createStore({
     getPageDescription: (state) => state.pageDescription,
     getSiteSettings: (state) => state.siteSettings,
     getNotification: (state) => state.notification,
-    isLoggedIn: (state) => state.adminAuth.isLoggedIn,
+    isLoggedIn: state => state.adminAuth.isLoggedIn,
     getUsername: (state) => state.adminAuth.username,
     // 获取用户留言
     getUserMessages: (state) => state.userMessages,
@@ -1334,33 +1223,8 @@ const store = createStore({
   actions: {
     // 初始化时检查登录状态
     init({ commit }) {
-      // 执行一次凭据迁移检查
-      try {
-        const data = localStorage.getItem('admin-credentials');
-        if (data) {
-          const credentials = JSON.parse(data);
-          
-          // 检测并迁移旧的默认凭据
-          if (credentials.username === 'admin' && 
-              (credentials.password === 'admin' || 
-               (!credentials.isEncrypted && credentials.password === 'admin') || 
-               (credentials.isEncrypted && decrypt(credentials.password) === 'admin'))) {
-            
-            console.log('初始化时检测到旧凭据，强制迁移');
-            const newCredentials = {
-              username: 'shannon2206',
-              password: encrypt('xetwuh-supqyw-7xidQy'),
-              isEncrypted: true,
-              isCustomized: false
-            };
-            localStorage.setItem('admin-credentials', JSON.stringify(newCredentials));
-          }
-        }
-      } catch (e) {
-        console.error('凭据迁移检查失败:', e);
-      }
-      
-      commit('checkLoginStatus');
+      // 移除凭据迁移检查，直接同步登录状态
+      commit('syncLoginStatus');
     },
     // 确保分类集合已存在
     ensureCategoryExists({ commit, state }, category) {
@@ -1381,14 +1245,28 @@ const store = createStore({
     },
     // 管理员登录
     async login({ commit }, { username, password }) {
+      commit('setLoading', true);
       try {
-        const res = await loginApi(username, password);
-        localStorage.setItem('token', res.data.token);
-        commit('setLogin', res.data.token);
-        return true;
-      } catch (e) {
-        console.error('登录失败', e);
-        return false;
+        const response = await loginApi(username, password);
+        if (response.data.token) {
+          // Pass both token and username to the setLogin mutation
+          commit('setLogin', { token: response.data.token, username: username }); 
+          commit('setNotification', { show: true, type: 'success', message: '登录成功！正在跳转...' });
+          return { success: true };
+        } else {
+          // Backend should send error in response.data.error
+          const errorMessage = response.data.error || '登录失败，未收到令牌或未知错误';
+          throw new Error(errorMessage);
+        }
+      } catch (error) {
+        // console.error('登录操作失败:', error);
+        // Handle errors from API (e.g., 401 Unauthorized) or network errors
+        const message = error.response?.data?.error || error.message || '登录时发生未知错误';
+        commit('setNotification', { show: true, type: 'error', message });
+        // It's important that AdminLogin.vue checks the return value of this action
+        return { success: false, message }; 
+      } finally {
+        commit('setLoading', false);
       }
     },
     // 添加 VPS 到服务器并刷新数据

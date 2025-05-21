@@ -758,7 +758,7 @@ export default {
     // 用户认证检查
     onMounted(() => {
       // 强制刷新登录状态检查
-      store.commit('checkLoginStatus');
+      store.commit('syncLoginStatus');
       
       // 重新检查登录状态
       if (!store.getters.isLoggedIn) {
