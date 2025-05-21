@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || '/api';
 
 // 管理员登录
 export function login(username, password) {
