@@ -166,18 +166,25 @@ export default {
         console.error('读取登录尝试记录失败:', e);
       }
       
-      // 如果用户已登录，直接替换到管理面板，避免历史记录问题
+      // 如果用户已登录，直接替换到管理面板（使用命名路由）
       if (store.getters.isLoggedIn) {
-        router.replace('/adminshuhao1031/panel'); // Changed to replace
+        router.replace({ name: 'AdminPanel' });
       }
     });
     
     // 监听登录状态变化 (这个 watcher 仍然有用，处理登录操作成功后的跳转)
-    watch(() => store.getters.isLoggedIn, (newValue, oldValue) => {
+    watch(() => store.getters.isLoggedIn, async (newValue, oldValue) => {
       // 只有当状态从 false 变为 true 时才跳转，避免不必要的重复跳转
       if (newValue === true && oldValue === false) { 
         console.log('检测到登录状态从false变为true，准备跳转到管理面板');
-        router.push('/adminshuhao1031/panel'); 
+        try {
+          // 使用命名路由跳转到管理员面板
+          await router.push({ name: 'AdminPanel' });
+          console.log('成功跳转到管理面板');
+        } catch (navigationError) {
+          console.error('导航到管理面板失败:', navigationError);
+          error.value = '无法跳转到管理面板，请稍后重试或联系管理员。';
+        }
       }
     });
     
@@ -186,11 +193,14 @@ export default {
       error.value = '';
       isLoading.value = true;
       try {
-        const success = await store.dispatch('login', { username: username.value, password: password.value });
-        if (!success) {
-          error.value = '用户名或密码错误';
+        const result = await store.dispatch('login', { username: username.value, password: password.value });
+        if (result && result.success) {
+          // 登录成功后，直接跳转到管理面板
+          await router.push({ name: 'AdminPanel' });
+        } else {
+          // 显示后端返回的错误信息或默认错误
+          error.value = (result && result.message) || '用户名或密码错误';
         }
-        // 登录成功后，watcher 会自动跳转到管理面板
       } catch (e) {
         console.error('登录失败:', e);
         error.value = '登录失败，请重试';

@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import Home from '../views/Home.vue';
 import Contact from '../views/Contact.vue';
 import AdminLogin from '../views/AdminLogin.vue';
@@ -66,12 +66,12 @@ const routes = [
     component: Contact
   },
   {
-    path: '/adminshuhao1031',
+    path: '/login',
     name: 'AdminLogin',
     component: AdminLogin
   },
   {
-    path: '/adminshuhao1031/panel',
+    path: '/panel',
     name: 'AdminPanel',
     component: AdminPanel,
     meta: { requiresAuth: true }
@@ -84,7 +84,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHashHistory('/adminshuhao1031/'),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
@@ -99,18 +99,21 @@ const router = createRouter({
 
 // 简单的路由守卫，检查是否已登录
 router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    // 强制刷新登录状态检查
-    store.commit('syncLoginStatus');
-    
-    // 使用store来检查登录状态
-    if (!store.getters.isLoggedIn) {
-      next({ name: 'AdminLogin' });
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  if (requiresAuth) {
+    if (store.getters.isLoggedIn) { // 如果Vuex状态已经是登录
+      next(); // 直接放行
     } else {
-      next();
+      // Vuex状态显示未登录，尝试从localStorage同步
+      store.commit('syncLoginStatus');
+      if (store.getters.isLoggedIn) { // 再次检查
+        next();
+      } else {
+        next({ name: 'AdminLogin' }); // 仍然未登录，则跳转到登录页
+      }
     }
   } else {
-    next();
+    next(); // 不需要认证的路由，直接放行
   }
 });
 

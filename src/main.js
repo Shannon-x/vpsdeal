@@ -62,6 +62,14 @@ function migrateAdminCredentials() {
 // 在应用启动时立即执行迁移
 migrateAdminCredentials();
 
+// 如果访问 /adminshuhao1031 或其子路径且没有 hash，重定向到对应的 hash 路径
+const path = window.location.pathname;
+if (path.startsWith('/adminshuhao1031') && !window.location.hash) {
+  // 计算子路由：根登录页为 '/login'
+  const sub = path === '/adminshuhao1031' ? '/login' : path.replace('/adminshuhao1031', '');
+  window.location.replace(`/adminshuhao1031#${sub}`);
+}
+
 // 创建Vue应用实例
 const app = createApp(App);
 

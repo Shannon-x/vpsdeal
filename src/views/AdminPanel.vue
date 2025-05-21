@@ -757,39 +757,10 @@ export default {
     
     // 用户认证检查
     onMounted(() => {
-      // 强制刷新登录状态检查
+      // 同步登录状态，如未登录则重定向到登录页面
       store.commit('syncLoginStatus');
-      
-      // 重新检查登录状态
       if (!store.getters.isLoggedIn) {
-        router.push('/adminshuhao1031');
-        return;
-      }
-      
-      // 额外验证：检查localStorage中是否有有效的登录凭据
-      try {
-        const authData = localStorage.getItem('admin-auth');
-        const credentialsData = localStorage.getItem('admin-credentials');
-        
-        if (!authData || !credentialsData) {
-          // 如果没有登录信息或凭据，强制退出
-          store.commit('logout');
-          router.push('/adminshuhao1031');
-          return;
-        }
-        
-        const auth = JSON.parse(authData);
-        const credentials = JSON.parse(credentialsData);
-        
-        // 检查登录状态的有效性
-        if (!auth.isLoggedIn || !auth.username || auth.username !== credentials.username) {
-          store.commit('logout');
-          router.push('/adminshuhao1031');
-        }
-      } catch (e) {
-        console.error('验证登录状态失败:', e);
-        store.commit('logout');
-        router.push('/adminshuhao1031');
+        router.push({ name: 'AdminLogin' });
       }
     });
     
