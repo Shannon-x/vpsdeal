@@ -1,24 +1,28 @@
 version: "3.8"
-services:
-  backend:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    container_name: vps-backend
-    environment:
-      - PORT=3000
-      - JWT_SECRET=supersecret
-    volumes:
-      - ./server:/app
-    ports:
-      - "18876:3000"
 
-  frontend:
+services:
+  app:
     build:
       context: .
-      dockerfile: Dockerfile.frontend
-    container_name: vps-frontend
-    depends_on:
-      - backend
+      dockerfile: Dockerfile
+      args:
+        # You can override the VUE_APP_API_BASE_URL here if needed for different environments
+        # VUE_APP_API_BASE_URL: https://www.yourdomain.com/api
+        VUE_APP_API_BASE_URL: /api # Default to relative path for container proxy
+    container_name: vps_app_unified
     ports:
-      - "18877:80" 
+      - "18877:8080" # Expose Nginx port (8080) to host's 18877
+    volumes:
+      # Persist backend data
+      - ./server/data:/app/server/data 
+      # For development, you might want to mount source code, 
+      # but for production, it's better to rely on the image content.
+      # - ./server:/app/server 
+      # - ./src:/app/frontend/src 
+      # - ./public:/app/frontend/public
+    environment:
+      # These are now set within supervisord.vps.conf for the backend program
+      # NODE_ENV: production
+      # PORT: 3000 # Backend internal port, Nginx proxies to this
+      JWT_SECRET: 'yoursecretkeyforsupersecuritychangeit' # CHANGE THIS!
+    restart: unless-stopped 
