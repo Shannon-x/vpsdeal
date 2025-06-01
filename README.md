@@ -1,6 +1,7 @@
 # VPS优惠推荐网站
 
 这是一个使用 Vue.js (前端) 和 Express.js (后端) 构建的 VPS 优惠推荐网站，采用 Tailwind CSS 进行样式设计。整个应用被容器化以便于部署和管理。
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
 
 ## 功能特点
 
