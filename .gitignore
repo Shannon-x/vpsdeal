@@ -2,6 +2,7 @@
 /node_modules
 /.pnp
 .pnp.js
+vps-deals/node_modules/
 
 # 测试
 /coverage
@@ -9,6 +10,8 @@
 # 生产构建
 /dist
 /build
+/.output
+/.nuxt
 
 # 杂项
 .DS_Store
@@ -27,4 +30,13 @@ yarn-error.log*
 .idea
 .vscode
 *.swp
-*.swo 
+*.swo
+
+# 数据库
+server/data/
+*.db
+*.sqlite
+
+# 缓存
+.cache/
+.parcel-cache/ 
