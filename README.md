@@ -217,18 +217,50 @@ server {
 ## 项目结构
 
 ```
-vps-deals/
-├── assets/          # 静态资源
-├── components/      # Vue组件
-├── layouts/         # 布局组件
-├── pages/           # 页面组件
-├── server/          # 后端API服务器
-├── database/        # 数据库脚本
-├── public/          # 公共静态文件
-├── stores/          # Pinia状态管理
-├── nuxt.config.ts   # Nuxt配置
-├── tailwind.config.ts # Tailwind配置
-└── package.json     # 项目依赖
+vps/
+├── app.vue             # Nuxt.js 主应用组件
+├── nuxt.config.ts      # Nuxt.js 配置文件
+├── tailwind.config.ts  # Tailwind CSS 配置
+├── package.json        # 项目依赖
+├── .env.example        # 环境变量示例
+│
+├── components/         # Vue 组件
+│   ├── AppHeader.vue   # 应用头部
+│   ├── AppFooter.vue   # 应用底部
+│   ├── VpsCard.vue     # VPS 卡片组件
+│   ├── BackToTop.vue   # 返回顶部按钮
+│   └── NotificationSystem.vue # 通知系统
+│
+├── pages/              # Nuxt.js 页面
+│   └── index.vue       # 首页
+│
+├── layouts/            # Nuxt.js 布局
+├── composables/        # Vue 组合式函数
+├── stores/             # Pinia 状态管理
+│
+├── assets/             # 静态资源
+│   └── css/
+│       └── main.css    # 主样式文件（包含现代化UI效果）
+│
+├── public/             # 公共静态文件
+│   ├── favicon.ico
+│   └── images/
+│
+├── server/             # 后端服务器
+│   ├── index.js        # Express 服务器
+│   └── package.json    # 服务器依赖
+│
+├── database/           # 数据库
+│   └── schema.sql      # MySQL 数据库架构
+│
+├── docker-compose.yml  # Docker Compose 配置
+├── Dockerfile          # Docker 镜像配置
+├── nginx.conf          # Nginx 配置
+│
+└── old-vue-version/    # 旧版 Vue 3 代码备份
+    ├── src/            # 旧版源代码
+    ├── cheapvps.html   # 旧版静态页面
+    └── admin-reset.html # 旧版管理页面
 ```
 
 ## 贡献指南
