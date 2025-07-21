@@ -47,7 +47,12 @@ cd vps
 ### 2. 安装依赖
 
 ```bash
-npm install
+# 安装所有依赖（前端 + 后端）
+npm run install:all
+
+# 或者分别安装
+npm install          # 前端依赖
+npm run server:install   # 后端依赖
 ```
 
 ### 3. 配置环境变量
@@ -84,11 +89,12 @@ mysql -u root -p < database/schema.sql
 ### 5. 启动开发服务器
 
 ```bash
-# 启动后端API服务器
-npm run server:dev
+# 同时启动前端和后端（推荐）
+npm run dev:all
 
-# 在新的终端窗口启动前端
-npm run dev
+# 或者分别启动
+npm run server:dev   # 后端API服务器 (端口 3001)
+npm run dev          # 前端服务器 (端口 3000)
 ```
 
 访问 http://localhost:3000 查看网站。
@@ -109,29 +115,10 @@ npm run build
 npm install -g pm2
 ```
 
-3. 创建 `ecosystem.config.js`：
+3. 创建 PM2 配置文件：
 
-```javascript
-module.exports = {
-  apps: [
-    {
-      name: 'vps-deals-backend',
-      script: './server/index.js',
-      env: {
-        NODE_ENV: 'production',
-        PORT: 3001
-      }
-    },
-    {
-      name: 'vps-deals-frontend',
-      script: '.output/server/index.mjs',
-      env: {
-        NODE_ENV: 'production',
-        PORT: 3000
-      }
-    }
-  ]
-}
+```bash
+cp ecosystem.config.js.example ecosystem.config.js
 ```
 
 4. 启动应用：
@@ -247,7 +234,8 @@ vps/
 │   └── images/
 │
 ├── server/             # 后端服务器
-│   ├── index.js        # Express 服务器
+│   ├── index.js        # Express 服务器（JSON文件版本）
+│   ├── index-mysql.js  # Express 服务器（MySQL版本）
 │   └── package.json    # 服务器依赖
 │
 ├── database/           # 数据库
@@ -256,6 +244,9 @@ vps/
 ├── docker-compose.yml  # Docker Compose 配置
 ├── Dockerfile          # Docker 镜像配置
 ├── nginx.conf          # Nginx 配置
+│
+├── ecosystem.config.js.example  # PM2 配置示例
+├── setup.sh            # 快速启动脚本
 │
 └── old-vue-version/    # 旧版 Vue 3 代码备份
     ├── src/            # 旧版源代码
