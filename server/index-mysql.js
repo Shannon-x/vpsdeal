@@ -3,6 +3,8 @@ const mysql = require('mysql2/promise');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const fs = require('fs').promises;
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -15,28 +17,31 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// MySQL connection pool
+// MySQL连接池配置
 let pool;
 
 async function initDatabase() {
   try {
-    // Parse DATABASE_URL
-    const dbUrl = new URL(process.env.DATABASE_URL);
-    
+    // 使用细化的数据库配置参数
     pool = mysql.createPool({
-      host: dbUrl.hostname,
-      port: dbUrl.port || 3306,
-      user: dbUrl.username,
-      password: dbUrl.password,
-      database: dbUrl.pathname.slice(1),
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0
+      host: process.env.DB_HOST || 'localhost',                    // 数据库主机
+      port: parseInt(process.env.DB_PORT) || 3306,                 // 数据库端口
+      user: process.env.DB_USER,                                   // 数据库用户名
+      password: process.env.DB_PASSWORD,                            // 数据库密码
+      database: process.env.DB_DATABASE || 'vps_deals',            // 数据库名称
+      waitForConnections: process.env.DB_WAIT_FOR_CONNECTIONS !== 'false', // 等待连接
+      connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,     // 连接池大小
+      queueLimit: parseInt(process.env.DB_QUEUE_LIMIT) || 0,               // 队列限制
+      charset: process.env.DB_CHARSET || 'utf8mb4',                        // 字符集
+      multipleStatements: true                                              // 允许执行多条SQL语句
     });
 
     // Test connection
     const connection = await pool.getConnection();
     console.log('✅ MySQL连接成功');
+    
+    // Initialize database tables if schema.sql exists
+    await initializeTables(connection);
     
     // Initialize admin user if not exists
     await initializeAdmin(connection);
@@ -45,6 +50,75 @@ async function initDatabase() {
   } catch (error) {
     console.error('❌ 数据库连接失败:', error);
     process.exit(1);
+  }
+}
+
+// Initialize database tables
+async function initializeTables(connection) {
+  try {
+    // Check if schema.sql exists
+    const schemaPath = path.join(__dirname, '..', 'database', 'schema.sql');
+    try {
+      const sql = await fs.readFile(schemaPath, 'utf8');
+      console.log('正在初始化数据库表...');
+      
+      // Split SQL statements and execute them one by one
+      const statements = sql.split(';').filter(stmt => stmt.trim());
+      
+      for (const statement of statements) {
+        if (statement.trim()) {
+          try {
+            await connection.query(statement);
+          } catch (err) {
+            // Ignore duplicate key errors for indexes
+            if (err.code === 'ER_DUP_KEYNAME') {
+              console.log(`索引已存在，跳过: ${err.message}`);
+            } else if (err.code === 'ER_DUP_ENTRY') {
+              console.log(`数据已存在，跳过: ${err.message}`);
+            } else {
+              throw err;
+            }
+          }
+        }
+      }
+      
+      console.log('✅ 数据库表初始化成功');
+      
+      // Create indexes separately
+      await createIndexes(connection);
+      
+    } catch (fileError) {
+      if (fileError.code === 'ENOENT') {
+        console.log('schema.sql文件不存在，跳过表初始化');
+      } else {
+        throw fileError;
+      }
+    }
+  } catch (error) {
+    console.error('数据库表初始化错误:', error);
+    throw error;
+  }
+}
+
+// Create indexes separately
+async function createIndexes(connection) {
+  const indexes = [
+    { table: 'vps_products', name: 'idx_vps_location', column: 'location' },
+    { table: 'vps_products', name: 'idx_vps_sort', columns: 'sort_order, id' }
+  ];
+  
+  for (const index of indexes) {
+    try {
+      const columnDef = index.columns || index.column;
+      await connection.query(`CREATE INDEX ${index.name} ON ${index.table}(${columnDef})`);
+      console.log(`✅ 创建索引: ${index.name}`);
+    } catch (err) {
+      if (err.code === 'ER_DUP_KEYNAME') {
+        console.log(`索引已存在: ${index.name}`);
+      } else {
+        console.error(`创建索引失败 ${index.name}:`, err.message);
+      }
+    }
   }
 }
 
@@ -63,6 +137,19 @@ async function initializeAdmin(connection) {
         [process.env.ADMIN_USERNAME, hashedPassword, 'admin@example.com']
       );
       console.log('✅ 管理员账户已创建');
+      console.log('Username:', process.env.ADMIN_USERNAME);
+      console.log('Password (hashed):', hashedPassword.substring(0, 20) + '...');
+    } else {
+      console.log('管理员账户已存在:', process.env.ADMIN_USERNAME);
+      // 可选：更新密码（用于测试）
+      if (process.env.UPDATE_ADMIN_PASSWORD === 'true') {
+        const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+        await connection.execute(
+          'UPDATE admins SET password_hash = ? WHERE username = ?',
+          [hashedPassword, process.env.ADMIN_USERNAME]
+        );
+        console.log('✅ 管理员密码已更新');
+      }
     }
   } catch (error) {
     console.error('管理员初始化错误:', error);
@@ -167,6 +254,7 @@ app.get('/api/vps/:id', async (req, res) => {
 app.post('/api/admin/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log('Login attempt for username:', username);
 
     const [admins] = await pool.execute(
       'SELECT * FROM admins WHERE username = ?',
@@ -174,11 +262,15 @@ app.post('/api/admin/login', async (req, res) => {
     );
 
     if (admins.length === 0) {
+      console.log('User not found:', username);
       return res.status(401).json({ error: '用户名或密码错误' });
     }
 
     const admin = admins[0];
+    console.log('Found admin:', admin.username);
+    
     const isValid = await bcrypt.compare(password, admin.password_hash);
+    console.log('Password validation result:', isValid);
 
     if (!isValid) {
       return res.status(401).json({ error: '用户名或密码错误' });
@@ -320,9 +412,23 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// 简化版爬虫管理API（暂时禁用）
+// const simpleCrawlerRouter = require('./api/simple-crawler');
+// app.use('/api/admin/crawler', simpleCrawlerRouter);
+
 // Start server
 async function startServer() {
   await initDatabase();
+  
+  // 暂时禁用爬虫服务自动启动，需要时手动启动
+  // const { startCrawlerService } = require('./crawler');
+  // try {
+  //   await startCrawlerService();
+  //   console.log('✅ 爬虫服务已启动');
+  // } catch (error) {
+  //   console.error('❌ 爬虫服务启动失败:', error);
+  //   // 爬虫服务失败不影响主服务运行
+  // }
   
   app.listen(PORT, () => {
     console.log(`🚀 服务器运行在端口 ${PORT}`);

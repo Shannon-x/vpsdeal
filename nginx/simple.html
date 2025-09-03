@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VPS Deals - 超值VPS优惠推荐</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .loading { display: none; }
+        .vps-card { transition: transform 0.2s; }
+        .vps-card:hover { transform: translateY(-4px); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-blue-600">VPS优惠网</h1>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-700 hover:text-blue-600">首页</a>
+                    <a href="#categories" class="text-gray-700 hover:text-blue-600">分类</a>
+                    <a href="#about" class="text-gray-700 hover:text-blue-600">关于</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">最新VPS优惠</h2>
+            <div id="vps-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="loading">加载中...</div>
+            </div>
+        </section>
+
+        <section id="categories" class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">VPS分类</h2>
+            <div id="category-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div class="loading">加载中...</div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // 加载VPS数据
+        async function loadVPS() {
+            try {
+                const response = await fetch('/api/vps?limit=12');
+                const data = await response.json();
+                const container = document.getElementById('vps-list');
+                
+                container.innerHTML = data.map(vps => `
+                    <div class="vps-card bg-white rounded-lg shadow-md p-6 hover:shadow-lg">
+                        <h3 class="text-xl font-semibold mb-2">${vps.provider_name}</h3>
+                        <p class="text-gray-600 mb-4">${vps.product_name}</p>
+                        <div class="space-y-2 text-sm text-gray-700">
+                            <p>📍 ${vps.location}</p>
+                            <p>💻 ${vps.cpu} / ${vps.memory}</p>
+                            <p>💾 ${vps.storage} / ${vps.bandwidth}</p>
+                        </div>
+                        <div class="mt-4 flex justify-between items-center">
+                            <span class="text-2xl font-bold text-blue-600">$${vps.price}</span>
+                            ${vps.discount > 0 ? `<span class="text-red-500">-${vps.discount}%</span>` : ''}
+                        </div>
+                        <a href="${vps.affiliate_link}" target="_blank" class="mt-4 block w-full bg-blue-600 text-white text-center py-2 rounded hover:bg-blue-700">
+                            立即购买
+                        </a>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('加载VPS失败:', error);
+            }
+        }
+
+        // 加载分类
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                const data = await response.json();
+                const container = document.getElementById('category-list');
+                
+                container.innerHTML = data.map(cat => `
+                    <a href="/categories/${cat.slug}" class="bg-white rounded-lg shadow p-4 hover:shadow-md text-center">
+                        <h4 class="font-semibold">${cat.name}</h4>
+                    </a>
+                `).join('');
+            } catch (error) {
+                console.error('加载分类失败:', error);
+            }
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', () => {
+            loadVPS();
+            loadCategories();
+        });
+    </script>
+</body>
+</html>

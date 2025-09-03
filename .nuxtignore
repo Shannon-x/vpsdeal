@@ -1,0 +1,14 @@
+# 忽略后端server目录
+server/**
+!server/api/**
+
+# 忽略其他不需要的文件
+*.log
+.DS_Store
+.env
+docker-compose.yml
+Dockerfile*
+nginx/
+docs/
+database/
+*.md

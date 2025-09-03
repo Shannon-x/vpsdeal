@@ -1,0 +1,47 @@
+export default defineEventHandler(async (event) => {
+  // Simple test without database
+  return [
+    {
+      id: 1,
+      productName: 'KVM VPS - 2GB RAM 特惠版',
+      providerName: 'CloudProvider Pro',
+      cpu: '2 vCPU',
+      memory: '2GB',
+      storage: '40GB SSD',
+      bandwidth: '2TB',
+      location: '香港',
+      price: 4.99,
+      originalPrice: 9.99,
+      discount: 50,
+      affiliateLink: 'https://example.com/deal1',
+      pricePeriod: 'monthly',
+      isHot: true,
+      ipv6: true,
+      ddosProtection: true,
+      ssdStorage: true,
+      rating: 4.5,
+      reviewCount: 128
+    },
+    {
+      id: 2,
+      productName: 'Premium VPS - 4GB RAM',
+      providerName: 'HostingPro',
+      cpu: '4 vCPU',
+      memory: '4GB',
+      storage: '80GB NVMe',
+      bandwidth: '4TB',
+      location: '新加坡',
+      price: 12.99,
+      originalPrice: 19.99,
+      discount: 35,
+      affiliateLink: 'https://example.com/deal2',
+      pricePeriod: 'monthly',
+      isHot: true,
+      ipv6: true,
+      ddosProtection: true,
+      ssdStorage: true,
+      rating: 4.8,
+      reviewCount: 256
+    }
+  ]
+})

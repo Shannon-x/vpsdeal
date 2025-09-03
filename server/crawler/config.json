@@ -1,0 +1,87 @@
+{
+  "targetUrl": "https://serverdeals.cc",
+  "schedule": "0 */6 * * *",
+  "timezone": "Asia/Shanghai",
+  "runImmediately": false,
+  "maxRetries": 3,
+  "retryDelay": 300000,
+  
+  "crawlerConfig": {
+    "headless": true,
+    "timeout": 30000,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  
+  "translation": {
+    "provider": "simple",
+    "baidu": {
+      "appId": "",
+      "appKey": ""
+    },
+    "libre": {
+      "apiUrl": "https://libretranslate.de/translate"
+    }
+  },
+  
+  "categories": [
+    {
+      "name": "Exclusive Deals",
+      "path": "/exclusive-deals",
+      "zhName": "独家优惠",
+      "dbCategoryId": 9
+    },
+    {
+      "name": "KVM under $15/year",
+      "path": "/kvm-under-15-year",
+      "zhName": "年付15美元以下KVM",
+      "dbCategoryId": 3
+    },
+    {
+      "name": "KVM under $25/year",
+      "path": "/kvm-under-25-year",
+      "zhName": "年付25美元以下KVM",
+      "dbCategoryId": 4
+    },
+    {
+      "name": "Monthly under $2",
+      "path": "/monthly-under-2",
+      "zhName": "月付2美元以下",
+      "dbCategoryId": 2
+    },
+    {
+      "name": "NAT/OpenVZ/LXC",
+      "path": "/nat-openvz-lxc",
+      "zhName": "NAT/OpenVZ/LXC",
+      "dbCategoryId": 7
+    },
+    {
+      "name": "High Spec VPS",
+      "path": "/high-spec-vps",
+      "zhName": "高配置VPS",
+      "dbCategoryId": 5
+    },
+    {
+      "name": "Storage VPS",
+      "path": "/storage-vps",
+      "zhName": "存储型VPS",
+      "dbCategoryId": 6
+    },
+    {
+      "name": "VDS Deals",
+      "path": "/vds-deals",
+      "zhName": "VDS优惠",
+      "dbCategoryId": 8
+    },
+    {
+      "name": "Free VPS",
+      "path": "/free-vps",
+      "zhName": "免费VPS",
+      "dbCategoryId": 1
+    }
+  ],
+  
+  "database": {
+    "cleanupDays": 30,
+    "batchSize": 50
+  }
+}

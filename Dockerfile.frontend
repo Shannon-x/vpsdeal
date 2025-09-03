@@ -1,0 +1,46 @@
+# 使用Node.js 20 Alpine版本作为基础镜像
+FROM node:20-alpine AS builder
+
+# 安装构建依赖
+RUN apk add --no-cache python3 make g++
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制package文件
+COPY package.json package-lock.json ./
+
+# 安装依赖
+RUN npm ci
+
+# 复制项目文件
+COPY . .
+# 确保server目录被复制
+COPY server ./server
+
+# 构建Nuxt应用
+RUN npm run build
+
+# 生产阶段
+FROM node:20-alpine
+
+# 设置工作目录
+WORKDIR /app
+
+# 只复制必要的文件
+COPY --from=builder /app/.output ./.output
+# 复制server目录以支持API路由
+COPY --from=builder /app/server ./server
+# 创建uploads目录
+RUN mkdir -p uploads
+
+# 暴露端口
+EXPOSE 3000
+
+# 设置环境变量
+ENV NITRO_PORT=3000
+ENV NITRO_HOST=0.0.0.0
+ENV NODE_ENV=production
+
+# 启动应用
+CMD ["node", ".output/server/index.mjs"]

@@ -1,40 +1,66 @@
+// PM2 进程管理配置文件
+// 用于管理 Node.js 应用的生产环境部署
 module.exports = {
   apps: [
     {
-      name: 'vps-backend',
-      script: './server/index-mysql.js',
-      cwd: './',
-      instances: 1,
-      autorestart: true,
-      watch: false,
-      max_memory_restart: '1G',
+      // 后端API服务配置
+      name: 'vps-backend',                    // 应用名称
+      script: './server/index-mysql.js',      // 启动脚本路径
+      cwd: './',                              // 工作目录
+      instances: 1,                           // 实例数量（可设置为 'max' 使用所有CPU核心）
+      autorestart: true,                      // 自动重启
+      watch: false,                           // 文件变化监控（生产环境建议关闭）
+      max_memory_restart: '1G',               // 内存超过1G时重启
+      error_file: './logs/backend-error.log', // 错误日志文件
+      out_file: './logs/backend-out.log',     // 输出日志文件
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', // 日志时间格式
       env: {
+        // 开发环境变量
         NODE_ENV: 'development',
         PORT: 3001
       },
       env_production: {
+        // 生产环境变量
         NODE_ENV: 'production',
         PORT: 3001
       }
     },
     {
-      name: 'vps-frontend',
-      script: './.output/server/index.mjs',
-      cwd: './',
-      instances: 1,
-      autorestart: true,
-      watch: false,
-      max_memory_restart: '1G',
+      // 前端Nuxt.js服务配置
+      name: 'vps-frontend',                   // 应用名称
+      script: './.output/server/index.mjs',   // Nuxt构建后的启动文件
+      cwd: './',                              // 工作目录
+      instances: 1,                           // 实例数量
+      autorestart: true,                      // 自动重启
+      watch: false,                           // 文件变化监控
+      max_memory_restart: '1G',               // 内存超过1G时重启
+      error_file: './logs/frontend-error.log', // 错误日志文件
+      out_file: './logs/frontend-out.log',     // 输出日志文件
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', // 日志时间格式
       env: {
+        // 开发环境变量
         NODE_ENV: 'development',
         PORT: 3000,
         NITRO_PORT: 3000
       },
       env_production: {
+        // 生产环境变量
         NODE_ENV: 'production',
         PORT: 3000,
         NITRO_PORT: 3000
       }
     }
-  ]
+  ],
+  
+  // 部署配置（可选）
+  deploy: {
+    production: {
+      user: 'deploy',                         // SSH用户名
+      host: 'your-server.com',                // 服务器地址
+      ref: 'origin/main',                     // Git分支
+      repo: 'git@github.com:your/repo.git',   // Git仓库地址
+      path: '/var/www/vps-deals',             // 服务器部署路径
+      'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.js --env production'
+    }
+  }
 };
