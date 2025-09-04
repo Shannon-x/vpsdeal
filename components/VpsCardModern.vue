@@ -99,6 +99,17 @@
       </a>
     </div>
 
+    <!-- 对比按钮 -->
+    <div class="comparison-section">
+      <button
+        @click="toggleComparison"
+        :class="['comparison-btn', { 'active': isInComparison }]"
+      >
+        <Icon :name="isInComparison ? 'mdi:checkbox-marked' : 'mdi:checkbox-blank-outline'" />
+        {{ isInComparison ? '已选择对比' : '加入对比' }}
+      </button>
+    </div>
+
     <!-- 标签 -->
     <div class="feature-tags" v-if="vps.features && vps.features.length">
       <span v-for="feature in parseFeatures(vps.features)" :key="feature" class="feature-tag">
@@ -109,7 +120,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useComparisonStore } from '~/stores/comparison'
+import { useToast } from '~/composables/useToast'
+
+const comparisonStore = useComparisonStore()
+const { showToast } = useToast()
 
 const props = defineProps({
   vps: {
@@ -119,6 +135,26 @@ const props = defineProps({
 })
 
 const showDetails = ref(false)
+
+// 是否在对比列表中
+const isInComparison = computed(() => {
+  return comparisonStore.isInComparison(props.vps.id)
+})
+
+// 切换对比状态
+const toggleComparison = async () => {
+  if (isInComparison.value) {
+    comparisonStore.removeFromComparison(props.vps.id)
+    showToast('已从对比列表中移除', 'info')
+  } else {
+    const result = await comparisonStore.addToComparison(props.vps.id)
+    if (result.success) {
+      showToast(result.message, 'success')
+    } else {
+      showToast(result.message, 'error')
+    }
+  }
+}
 
 // 格式化价格
 const formatPrice = (price) => {
@@ -279,6 +315,21 @@ const parseFeatures = (features) => {
 .feature-tag {
   @apply px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 
          dark:text-gray-300 rounded-full;
+}
+
+.comparison-section {
+  @apply px-4 pb-4;
+}
+
+.comparison-btn {
+  @apply w-full py-2 px-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 
+         text-gray-700 dark:text-gray-300 hover:border-primary hover:text-primary 
+         dark:hover:border-primary dark:hover:text-primary transition-colors 
+         flex items-center justify-center gap-2;
+}
+
+.comparison-btn.active {
+  @apply border-primary bg-primary/10 text-primary;
 }
 
 /* 响应式设计 */
